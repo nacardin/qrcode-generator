@@ -23,16 +23,21 @@ var qrcode = function() {
 
   /**
    * qrcode
-   * @param typeNumber 1 to 40
-   * @param errorCorrectionLevel 'L','M','Q','H'
+   * @param options
+   * @param options.typeNumber 1 to 40
+   * @param options.errorCorrectionLevel 'L','M','Q','H'
+   * @param options.fgColor foreground color value as number
+   * @param options.bgColor background color value as number
    */
-  var qrcode = function(typeNumber, errorCorrectionLevel) {
+  var qrcode = function(options) {
 
     var PAD0 = 0xEC;
     var PAD1 = 0x11;
 
-    var _typeNumber = typeNumber;
-    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _typeNumber = options.typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[options.errorCorrectionLevel];
+    var _fgColor = options.fgColor || 0x0;
+    var _bgColor = options.bgColor || 0xffffff;
     var _modules = null;
     var _moduleCount = 0;
     var _dataCache = null;
@@ -430,7 +435,7 @@ var qrcode = function() {
           qrHtml += ' width: ' + cellSize + 'px;';
           qrHtml += ' height: ' + cellSize + 'px;';
           qrHtml += ' background-color: ';
-          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += _this.isDark(r, c)? '#' + _bgColor.toString(16) : '#' + _fgColor.toString(16);
           qrHtml += ';';
           qrHtml += '"/>';
         }
@@ -471,7 +476,7 @@ var qrcode = function() {
         }
       }
 
-      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '" stroke="transparent" fill="#'+ _fgColor.toString(16) +'"/>';
       qrSvg += '</svg>';
 
       return qrSvg;
@@ -486,7 +491,7 @@ var qrcode = function() {
       var min = margin;
       var max = size - margin;
 
-      return createImgTag(size, size, function(x, y) {
+      return createImgTag(size, size, _fgColor, _bgColor, function(x, y) {
         if (min <= x && x < max && min <= y && y < max) {
           var c = Math.floor( (x - min) / cellSize);
           var r = Math.floor( (y - min) / cellSize);
@@ -1589,7 +1594,7 @@ var qrcode = function() {
   // gifImage (B/W)
   //---------------------------------------------------------------------
 
-  var gifImage = function(width, height) {
+  var gifImage = function(width, height, fgColor, bgColor) {
 
     var _width = width;
     var _height = height;
@@ -1621,15 +1626,17 @@ var qrcode = function() {
       //---------------------------------
       // Global Color Map
 
-      // black
-      out.writeByte(0x00);
-      out.writeByte(0x00);
-      out.writeByte(0x00);
+      console.log('asd', fgColor, bgColor);
 
-      // white
-      out.writeByte(0xff);
-      out.writeByte(0xff);
-      out.writeByte(0xff);
+      // foreground
+      out.writeByte((fgColor & 0xff0000) >> 16);
+      out.writeByte((fgColor & 0x00ff00) >> 8);
+      out.writeByte(fgColor & 0x0000ff);
+
+      // background
+      out.writeByte((bgColor & 0xff0000) >> 16);
+      out.writeByte((bgColor & 0x00ff00) >> 8);
+      out.writeByte(bgColor & 0x0000ff);
 
       //---------------------------------
       // Image Descriptor
@@ -1799,9 +1806,9 @@ var qrcode = function() {
     return _this;
   };
 
-  var createImgTag = function(width, height, getPixel, alt) {
+  var createImgTag = function(width, height, fgColor, bgColor, getPixel) {
 
-    var gif = gifImage(width, height);
+    var gif = gifImage(width, height, fgColor, bgColor);
     for (var y = 0; y < height; y += 1) {
       for (var x = 0; x < width; x += 1) {
         gif.setPixel(x, y, getPixel(x, y) );
@@ -1830,11 +1837,6 @@ var qrcode = function() {
     img += '\u0020height="';
     img += height;
     img += '"';
-    if (alt) {
-      img += '\u0020alt="';
-      img += alt;
-      img += '"';
-    }
     img += '/>';
 
     return img;

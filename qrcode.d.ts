@@ -16,7 +16,7 @@
 //---------------------------------------------------------------------
 
 interface QRCodeFactory {
-  (typeNumber: number, errorCorrectionLevel: string) : QRCode;
+  (options: any) : QRCode;
   stringToBytes(s: string) : number[];
   createStringToBytes(unicodeData: string, numChars: number) :
     (s : string) => number[];

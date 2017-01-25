@@ -1626,8 +1626,6 @@ var qrcode = function() {
       //---------------------------------
       // Global Color Map
 
-      console.log('asd', fgColor, bgColor);
-
       // foreground
       out.writeByte((fgColor & 0xff0000) >> 16);
       out.writeByte((fgColor & 0x00ff00) >> 8);
